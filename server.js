@@ -25,6 +25,7 @@ db.sequelize;
 db.connectTesting;
 
 app.get("/", (req, res) => {
+    console.log(process.env.CLIENT_REDIRECT);
     res.json({ message: "Welcome to server" });
 });
 
