@@ -213,6 +213,35 @@ app.get("/api/detail/:productId", async (req, res) => {
     }
 });
 
+app.get("/api/location", async (req, res) => {
+    try {
+        if (!req.query.province_id) {
+            const data = await dataType.Province.findAll({
+            });
+            res.json(data);
+        }
+        if (req.query.province_id && !req.query.district_id) {
+            const data = await dataType.District.findAll({
+                where: {
+                    _province_id: req.query.province_id,
+                },
+            });
+            res.json(data);
+        }
+        if (req.query.district_id && req.query.province_id) {
+            const data = await dataType.Ward.findAll({
+                where: {
+                    _province_id: req.query.province_id,
+                    _district_id: req.query.district_id,
+                },
+            });
+            res.json(data);
+        }
+    } catch (err) {
+        console.log(err);
+    }
+});
+
 app.listen(process.env.PORT || PORT, () => {
     console.log(`Server is running on port:`, process.env.PORT || PORT);
 });

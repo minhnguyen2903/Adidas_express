@@ -35,7 +35,46 @@ const Users = db.sequelize.define("users", {
     updatedAt: DataTypes.DATE,
 })
 
+const Province = db.sequelize.define("province", {
+    id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    _name: DataTypes.STRING,
+    _code: DataTypes.STRING
+})
+
+const District = db.sequelize.define("district", {
+    id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    _name: DataTypes.STRING,
+    _prefix: DataTypes.STRING,
+    _province_id: DataTypes.INTEGER
+})
+
+const Ward = db.sequelize.define("ward", {
+    id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    _name: DataTypes.STRING,
+    _prefix: DataTypes.STRING,
+    _province_id: DataTypes.INTEGER,
+    _district_id: DataTypes.INTEGER
+})
+
 module.exports = {
     Products: Products,
-    Users: Users
+    Users: Users,
+    Province: Province,
+    District: District,
+    Ward: Ward,
 };
