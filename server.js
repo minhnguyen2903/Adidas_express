@@ -10,6 +10,8 @@ const db = require("./models/database");
 const dbType = require("./models/dataType");
 const Filter = require("./services/filter");
 const { QueryTypes, Op } = require("sequelize");
+const address = require('address');
+
 const PORT = 5000;
 
 const app = express();
@@ -25,8 +27,16 @@ db.sequelize;
 db.connectTesting;
 
 app.get("/", (req, res) => {
-    console.log(process.env.CLIENT_REDIRECT);
     res.json({ message: "Welcome to server" });
+});
+
+app.get("/user/verify", (req, res) => {
+    const ipV4 = address.ip();   // '192.168.0.2'
+    const ipV6 = address.ipv6(); // 'fe80::7aca:39ff:feb0:e67d'
+    const MAC_Address = address.mac((err, addr) => addr);
+    res.json({
+        ipV4,ipV6,MAC_Address
+    });
 });
 
 app.post("/login", async (req, res) => {
