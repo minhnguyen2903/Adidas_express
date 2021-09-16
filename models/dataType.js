@@ -1,4 +1,4 @@
-const db = require("../models/database")
+const db = require("../models/database");
 const { DataTypes } = require("sequelize");
 
 const Products = db.sequelize.define("products", {
@@ -24,7 +24,7 @@ const Users = db.sequelize.define("users", {
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,
-        unique: true
+        unique: true,
     },
     firstName: DataTypes.STRING,
     lastName: DataTypes.STRING,
@@ -33,43 +33,82 @@ const Users = db.sequelize.define("users", {
     password: DataTypes.STRING,
     createdAt: DataTypes.DATE,
     updatedAt: DataTypes.DATE,
-})
+});
 
 const Province = db.sequelize.define("province", {
     id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         autoIncrement: true,
-        primaryKey: true
+        primaryKey: true,
     },
     _name: DataTypes.STRING,
-    _code: DataTypes.STRING
-})
+    _code: DataTypes.STRING,
+});
 
 const District = db.sequelize.define("district", {
     id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         autoIncrement: true,
-        primaryKey: true
+        primaryKey: true,
     },
     _name: DataTypes.STRING,
     _prefix: DataTypes.STRING,
-    _province_id: DataTypes.INTEGER
-})
+    _province_id: DataTypes.INTEGER,
+});
 
 const Ward = db.sequelize.define("ward", {
     id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         autoIncrement: true,
-        primaryKey: true
+        primaryKey: true,
     },
     _name: DataTypes.STRING,
     _prefix: DataTypes.STRING,
     _province_id: DataTypes.INTEGER,
-    _district_id: DataTypes.INTEGER
-})
+    _district_id: DataTypes.INTEGER,
+});
+
+const Orders = db.sequelize.define("orders", {
+    orderId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+    },
+    firstName: DataTypes.STRING,
+    lastName: DataTypes.STRING,
+    phoneNumber: DataTypes.STRING,
+    location: DataTypes.STRING,
+});
+
+const OrderProducts = db.sequelize.define("orderProducts", {
+    id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+    },
+    orderId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        references: {
+            model: Orders,
+            key: "orderId",
+        }
+    },
+    unit: DataTypes.INTEGER,
+    productId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        references: {
+            model: Products,
+            key: "productId"
+        }
+    },
+});
 
 module.exports = {
     Products: Products,
@@ -77,4 +116,6 @@ module.exports = {
     Province: Province,
     District: District,
     Ward: Ward,
+    Orders: Orders,
+    OrderProducts: OrderProducts,
 };

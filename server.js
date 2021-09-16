@@ -7,9 +7,9 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const fileUpload = require("express-fileupload");
 const db = require("./models/database");
-const dataType = require("./models/dataType");
+const dbType = require("./models/dataType");
 const Filter = require("./services/filter");
-const { QueryTypes, DataTypes, Op } = require("sequelize");
+const { QueryTypes, Op } = require("sequelize");
 const PORT = 5000;
 
 const app = express();
@@ -37,12 +37,10 @@ app.post("/login", async (req, res) => {
             res.status(400).send("All input is required");
         }
         encryptedPassword = await bcrypt.hash(password, 10);
-        console.log("------------1-----------------");
 
-        const oldUser = await dataType.Users.findOne({
+        const oldUser = await dbType.Users.findOne({
             where: { email: email },
         });
-        console.log("------------2-----------------", encryptedPassword);
 
         if (!oldUser) {
             return res.status(400).json({ message: "Invalid User" });
@@ -60,17 +58,41 @@ app.post("/login", async (req, res) => {
                         expiresIn: "2h",
                     }
                 );
-                console.log("------------4-----------------");
                 res.status(200).json(token);
             } else {
                 res.status(400).json({ error: "Invalid Password" });
             }
         }
-        console.log("------------3-----------------");
     } catch (err) {
         throw err;
     }
 });
+
+
+app.post("/api/delivery", async(req, res) => {
+    
+    try {
+        const {orderId, firstName, lastName, phoneNumber, productId, number} = req.body;
+        const location = `${req.body.province}/${req.body.district}/${req.body.ward}`
+        const orderList = [];
+        productId.forEach((element,index) => {
+            const product = {
+                orderId: orderId,
+                productId: element,
+                unit: number[index],
+            }
+            orderList.push(product)
+        })
+        const order = await dbType.Orders.create({
+            orderId, firstName, lastName, phoneNumber, location
+        }).catch(err => {console.log(err)})
+        const createOrder =  await dbType.OrderProducts.bulkCreate(orderList)
+        console.log("all done!");
+        res.json({message: "done"});
+    } catch(err) {
+        throw err;
+    }
+})
 
 app.post("/register", async (req, res) => {
     // Our register logic starts here
@@ -83,7 +105,7 @@ app.post("/register", async (req, res) => {
         }
         // check if user already exist
         // Validate if user exist in our database
-        const oldUser = await dataType.Users.findOne({
+        const oldUser = await dbType.Users.findOne({
             where: { email: email },
         });
         if (oldUser) {
@@ -93,7 +115,7 @@ app.post("/register", async (req, res) => {
         encryptedPassword = await bcrypt.hash(password, 10);
         console.log(encryptedPassword);
         // Create user in our database
-        const user = await dataType.Users.create({
+        const user = await dbType.Users.create({
             firstName,
             lastName,
             birth,
@@ -122,8 +144,9 @@ app.post("/register", async (req, res) => {
 
 app.get("/api/search", async (req, res) => {
     try {
+        console.log(req.query);
         const queryKey = Filter(req.query);
-        const data = await dataType.Products.findAll({
+        const data = await dbType.Products.findAll({
             where: {
                 title: {
                     [Op.like]: queryKey.title,
@@ -197,7 +220,7 @@ app.get("/api/products", async (req, res) => {
 
 app.get("/api/detail/:productId", async (req, res) => {
     try {
-        const data = await dataType.Products.findAll({
+        const data = await dbType.Products.findAll({
             where: { productId: req.params.productId },
         });
         data.forEach((object) => {
@@ -216,12 +239,12 @@ app.get("/api/detail/:productId", async (req, res) => {
 app.get("/api/location", async (req, res) => {
     try {
         if (!req.query.province_id) {
-            const data = await dataType.Province.findAll({
+            const data = await dbType.Province.findAll({
             });
             res.json(data);
         }
         if (req.query.province_id && !req.query.district_id) {
-            const data = await dataType.District.findAll({
+            const data = await dbType.District.findAll({
                 where: {
                     _province_id: req.query.province_id,
                 },
@@ -229,7 +252,7 @@ app.get("/api/location", async (req, res) => {
             res.json(data);
         }
         if (req.query.district_id && req.query.province_id) {
-            const data = await dataType.Ward.findAll({
+            const data = await dbType.Ward.findAll({
                 where: {
                     _province_id: req.query.province_id,
                     _district_id: req.query.district_id,
