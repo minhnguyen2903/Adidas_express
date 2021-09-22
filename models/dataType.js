@@ -29,6 +29,8 @@ const Users = db.sequelize.define("users", {
     firstName: DataTypes.STRING,
     lastName: DataTypes.STRING,
     birth: DataTypes.DATEONLY,
+    phoneNumber: DataTypes.STRING,
+    location: DataTypes.STRING,
     email: DataTypes.STRING,
     password: DataTypes.STRING,
     createdAt: DataTypes.DATE,

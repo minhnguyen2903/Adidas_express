@@ -34,7 +34,10 @@ app.get("/user/verify", (req, res) => {
     const ipV4 = address.ip();   // '192.168.0.2'
     const ipV6 = address.ipv6(); // 'fe80::7aca:39ff:feb0:e67d'
     const MAC_Address = address.mac((err, addr) => addr);
+    var ip = (req.headers['x-forwarded-for'] || '').split(',').pop().trim() || 
+         req.socket.remoteAddress
     res.json({
+        ip,
         ipV4,ipV6,MAC_Address
     });
 });
@@ -108,9 +111,9 @@ app.post("/register", async (req, res) => {
     // Our register logic starts here
     try {
         // Get user input
-        const { firstName, lastName, birth, email, password } = req.body;
+        const { firstName, lastName, phoneNumber, location, birth, email, password } = req.body;
         // Validate user input
-        if (!(email && password && firstName && lastName)) {
+        if (!(email && password && firstName && lastName && phoneNumber && location)) {
             res.status(400).send("All input is required");
         }
         // check if user already exist
@@ -123,11 +126,12 @@ app.post("/register", async (req, res) => {
         }
         //Encrypt user password
         encryptedPassword = await bcrypt.hash(password, 10);
-        console.log(encryptedPassword);
         // Create user in our database
         const user = await dbType.Users.create({
             firstName,
             lastName,
+            phoneNumber,
+            location,
             birth,
             email: email.toLowerCase(), // sanitize: convert email to lowercase
             password: encryptedPassword,
@@ -154,7 +158,6 @@ app.post("/register", async (req, res) => {
 
 app.get("/api/search", async (req, res) => {
     try {
-        console.log(req.query);
         const queryKey = Filter(req.query);
         const data = await dbType.Products.findAll({
             where: {
