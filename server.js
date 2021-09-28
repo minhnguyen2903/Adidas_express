@@ -15,7 +15,7 @@ const address = require('address');
 const PORT = 5000;
 
 const app = express();
-
+app.use(express.json());
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(fileUpload());
@@ -44,11 +44,10 @@ app.get("/user/verify", (req, res) => {
 
 app.post("/login", async (req, res) => {
     try {
-        console.log(req.body);
         const { email, password } = req.body;
         if (!(email && password)) {
             res.status(400).send("All input is required");
-        }
+        } 
         encryptedPassword = await bcrypt.hash(password, 10);
 
         const oldUser = await dbType.Users.findOne({
@@ -62,13 +61,12 @@ app.post("/login", async (req, res) => {
                 password,
                 oldUser.password
             );
-            console.log(validPassword);
             if (validPassword) {
                 const token = jwt.sign(
                     { email: email },
                     process.env.TOKEN_KEY,
                     {
-                        expiresIn: "2h",
+                        expiresIn: "300s",
                     }
                 );
                 res.status(200).json(token);
@@ -79,6 +77,20 @@ app.post("/login", async (req, res) => {
     } catch (err) {
         throw err;
     }
+});
+
+app.post("/verify", (req, res) => {
+    const token = req.headers.authorization.replace("Bearer ", "");
+    jwt.verify(token, process.env.TOKEN_KEY, (err, response) => {
+        if(err) {
+            res.status(403).send("Forbidden");
+        } else {
+            console.log(response)
+            res.json(response)
+        }
+        
+    })
+    
 });
 
 
