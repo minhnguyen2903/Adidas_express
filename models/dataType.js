@@ -86,6 +86,46 @@ const Orders = db.sequelize.define("orders", {
     location: DataTypes.STRING,
 });
 
+const WishLists = db.sequelize.define("wishlists", {
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        references: {
+            model: Users,
+            key: "email",
+        }
+    },
+    productId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        references: {
+            model: Products,
+            key: "productId"
+        }
+    }
+})
+
+const Carts = db.sequelize.define("carts", {
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        references: {
+            model: Users,
+            key: "email",
+        }
+    },
+    productId: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        references: {
+            model: Products,
+            key: "productId"
+        }
+    },
+    number: DataTypes.INTEGER,
+    size: DataTypes.STRING
+})
+
 const OrderProducts = db.sequelize.define("orderProducts", {
     id: {
         type: DataTypes.INTEGER,
@@ -118,6 +158,8 @@ module.exports = {
     Province: Province,
     District: District,
     Ward: Ward,
+    WishLists: WishLists,
+    Carts: Carts,
     Orders: Orders,
     OrderProducts: OrderProducts,
 };
