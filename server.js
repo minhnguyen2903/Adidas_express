@@ -52,7 +52,6 @@ function verifyToken(req, res, next) {
 }
 
 app.post('/user/wishList', verifyToken, async(req, res) => {
-  console.log(req.token);
   jwt.verify(req.token, process.env.TOKEN_KEY, (err, result) => {
     if(err) {
       console.log(err);
@@ -63,6 +62,31 @@ app.post('/user/wishList', verifyToken, async(req, res) => {
     }
   })
   res.json({message: 'hehe'});
+});
+
+app.post('/refreshToken', verifyToken, (req, res) => {
+  jwt.verify(req.token, process.env.TOKEN_REFRESH, (err, result) => {
+    if(err) {
+      console.log(err);
+      return
+    } else {
+      const token = jwt.sign({ email: result.email }, process.env.TOKEN_KEY, {expiresIn: "300s"});
+        const expireTime = jwt.verify(token, process.env.TOKEN_KEY, (err, expireTime) => {
+          if(err) {
+            console.log(err)
+          }else {
+            return expireTime.exp
+          }
+        })
+        let refreshToken
+        if(Date.now() > result.exp*1000) {
+          refreshToken = jwt.sign({ email: result.email }, process.env.TOKEN_REFRESH, {expiresIn: "1h"});
+        } else {
+          refreshToken = req.token;
+        }
+        res.status(200).json({token, refreshToken, expireTime})
+    }
+  })
 })
 
 app.get("/user/verify", (req, res) => {
@@ -178,17 +202,17 @@ app.post("/login", async (req, res) => {
     } else {
       const validPassword = await bcrypt.compare(password, oldUser.password);
       if (validPassword) {
-        const token = jwt.sign({ email: email }, process.env.TOKEN_KEY, {
-          expiresIn: "30m",
-        });
+        const token = jwt.sign({ email: email }, process.env.TOKEN_KEY, {expiresIn: "300s"});
         const expireTime = jwt.verify(token, process.env.TOKEN_KEY, (err, result) => {
           if(err) {
             console.log(err)
-          } else {
+          }else {
             return result.exp
           }
         })
-        res.status(200).json({token, expireTime});
+        const refreshToken = jwt.sign({ email: email }, process.env.TOKEN_REFRESH, {expiresIn: "1h"});
+        console.log("done");
+        res.status(200).json({token, refreshToken, expireTime});
       } else {
         res.status(400).json({ error: "Invalid Password" });
       }
@@ -272,12 +296,20 @@ app.post("/register", async (req, res) => {
     });
     // Create token
     const token = jwt.sign({ email }, process.env.TOKEN_KEY, {
-      expiresIn: "2h",
+      expiresIn: "300s",
     });
+    const expireTime = jwt.verify(token, process.env.TOKEN_KEY, (err, result) => {
+      if(err) {
+        console.log(err)
+      }else {
+        return result.exp
+      }
+    })
+    const refreshToken = jwt.sign({ email: email }, process.env.TOKEN_REFRESH, {expiresIn: "1h"});
     // save user token
     user.token = token;
     // return new user
-    res.status(201).json(token);
+    res.status(201).json({token, refreshToken, expireTime});
   } catch (err) {
     console.log(err);
   }
@@ -320,7 +352,7 @@ app.get("/api/all-products", async (req, res) => {
     data.forEach((object) => {
       object.image = `${process.env.EXPRESS_PORT}/${object.image}`;
       const date = new Date(object.createdAt);
-      if (Date.now() - date.getTime() < 3418794449) {
+      if (Date.now() - date.getTime() < 4418994449) {
         object.badgeText = "New";
       }
     });
