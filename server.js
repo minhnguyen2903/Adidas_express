@@ -374,7 +374,7 @@ app.get("/api/all-products", async (req, res) => {
     data.forEach((object) => {
       object.image = `${process.env.EXPRESS_PORT}/${object.image}`;
       const date = new Date(object.createdAt);
-      if (Date.now() - date.getTime() < 4418994449) {
+      if (date.getTime() > 1630333823000) {
         object.badgeText = "New";
       }
     });
