@@ -51,43 +51,49 @@ function verifyToken(req, res, next) {
   }
 }
 
-app.post('/user/wishList', verifyToken, async(req, res) => {
+app.post("/user/wishList", verifyToken, async (req, res) => {
   jwt.verify(req.token, process.env.TOKEN_KEY, (err, result) => {
-    if(err) {
+    if (err) {
       console.log(err);
-      return
+      return;
     } else {
-      console.log(result)
-      console.log("exp: ", new Date(result.exp*1000))
+      console.log(result);
+      console.log("exp: ", new Date(result.exp * 1000));
     }
-  })
-  res.json({message: 'hehe'});
+  });
+  res.json({ message: "hehe" });
 });
 
-app.post('/refreshToken', verifyToken, (req, res) => {
+app.post("/refreshToken", verifyToken, (req, res) => {
+  console.log('%c refresh! ', 'color: #bada55');
   jwt.verify(req.token, process.env.TOKEN_REFRESH, (err, result) => {
-    if(err) {
+    if (err) {
       console.log(err);
-      return
+      res.status(403).send("forbidden");
     } else {
-      const token = jwt.sign({ email: result.email }, process.env.TOKEN_KEY, {expiresIn: "300s"});
-        const expireTime = jwt.verify(token, process.env.TOKEN_KEY, (err, expireTime) => {
-          if(err) {
-            console.log(err)
-          }else {
-            return expireTime.exp
+      const token = jwt.sign({ email: result.email }, process.env.TOKEN_KEY, {
+        expiresIn: "30s",
+      });
+      const expireTime = jwt.verify(
+        token,
+        process.env.TOKEN_KEY,
+        (err, expireTime) => {
+          if (err) {
+            console.log(err);
+          } else {
+            return expireTime.exp;
           }
-        })
-        let refreshToken
-        if(Date.now() > result.exp*1000) {
-          refreshToken = jwt.sign({ email: result.email }, process.env.TOKEN_REFRESH, {expiresIn: "1h"});
-        } else {
-          refreshToken = req.token;
         }
-        res.status(200).json({token, refreshToken, expireTime})
+      );
+      const refreshToken = jwt.sign(
+        { email: result.email },
+        process.env.TOKEN_REFRESH,
+        { expiresIn: "2m" }
+      );
+      res.status(200).json({ token, refreshToken, expireTime });
     }
-  })
-})
+  });
+});
 
 app.get("/user/verify", (req, res) => {
   const ipV4 = address.ip(); // '192.168.0.2'
@@ -105,6 +111,7 @@ app.get("/user/verify", (req, res) => {
 });
 
 app.post("/user/info", verifyToken, async (req, res) => {
+  console.log("login...");
   jwt.verify(req.token, process.env.TOKEN_KEY, async (err, success) => {
     if (err) {
       console.log(err);
@@ -126,7 +133,7 @@ app.post("/user/info", verifyToken, async (req, res) => {
           return wishListId;
         })
         .catch((err) => console.log(err));
-        let wishListItem = [];
+      let wishListItem = [];
       if (userWishList.length > 0) {
         wishListItem = await dbType.Products.findAll({
           where: {
@@ -178,7 +185,7 @@ app.post("/user/info", verifyToken, async (req, res) => {
       const User = {
         info: oldUser,
         wishLists: wishListItem,
-        carts: cartItem
+        carts: cartItem,
       };
       res.json(User);
     }
@@ -202,17 +209,27 @@ app.post("/login", async (req, res) => {
     } else {
       const validPassword = await bcrypt.compare(password, oldUser.password);
       if (validPassword) {
-        const token = jwt.sign({ email: email }, process.env.TOKEN_KEY, {expiresIn: "300s"});
-        const expireTime = jwt.verify(token, process.env.TOKEN_KEY, (err, result) => {
-          if(err) {
-            console.log(err)
-          }else {
-            return result.exp
+        const token = jwt.sign({ email: email }, process.env.TOKEN_KEY, {
+          expiresIn: "30s",
+        });
+        const expireTime = jwt.verify(
+          token,
+          process.env.TOKEN_KEY,
+          (err, result) => {
+            if (err) {
+              console.log(err);
+            } else {
+              return result.exp;
+            }
           }
-        })
-        const refreshToken = jwt.sign({ email: email }, process.env.TOKEN_REFRESH, {expiresIn: "1h"});
+        );
+        const refreshToken = jwt.sign(
+          { email: email },
+          process.env.TOKEN_REFRESH,
+          { expiresIn: "2m" }
+        );
         console.log("done");
-        res.status(200).json({token, refreshToken, expireTime});
+        res.status(200).json({ token, refreshToken, expireTime });
       } else {
         res.status(400).json({ error: "Invalid Password" });
       }
@@ -224,15 +241,14 @@ app.post("/login", async (req, res) => {
 
 app.post("/api/delivery", async (req, res) => {
   try {
-    const { orderId, firstName, lastName, phoneNumber, productId, number } =
-      req.body;
+    const { orderId, firstName, lastName, phoneNumber, productId, number } = req.body;
     const location = `${req.body.province}/${req.body.district}/${req.body.ward}`;
     const orderList = [];
     productId.forEach((element, index) => {
       const product = {
         orderId: orderId,
         productId: element,
-        unit: number[index],
+        units: number[index],
       };
       orderList.push(product);
     });
@@ -296,20 +312,26 @@ app.post("/register", async (req, res) => {
     });
     // Create token
     const token = jwt.sign({ email }, process.env.TOKEN_KEY, {
-      expiresIn: "300s",
+      expiresIn: "30s",
     });
-    const expireTime = jwt.verify(token, process.env.TOKEN_KEY, (err, result) => {
-      if(err) {
-        console.log(err)
-      }else {
-        return result.exp
+    const expireTime = jwt.verify(
+      token,
+      process.env.TOKEN_KEY,
+      (err, result) => {
+        if (err) {
+          console.log(err);
+        } else {
+          return result.exp;
+        }
       }
-    })
-    const refreshToken = jwt.sign({ email: email }, process.env.TOKEN_REFRESH, {expiresIn: "1h"});
+    );
+    const refreshToken = jwt.sign({ email: email }, process.env.TOKEN_REFRESH, {
+      expiresIn: "2m",
+    });
     // save user token
     user.token = token;
     // return new user
-    res.status(201).json({token, refreshToken, expireTime});
+    res.status(201).json({ token, refreshToken, expireTime });
   } catch (err) {
     console.log(err);
   }
@@ -436,8 +458,6 @@ app.get("/api/location", async (req, res) => {
     console.log(err);
   }
 });
-
-
 
 app.listen(process.env.PORT || PORT, () => {
   console.log(`Server is running on port:`, process.env.PORT || PORT);
