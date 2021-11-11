@@ -246,7 +246,7 @@ app.post("/api/delivery", async (req, res) => {
     const location = `${req.body.province}/${req.body.district}/${req.body.ward}`;
     const orderList = [];
     console.log(req.body);
-    if(typeof productId === "array") {
+    if(typeof productId === "object") {
       productId.forEach((element, index) => {
         const product = {
           orderId: orderId,
