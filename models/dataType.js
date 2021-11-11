@@ -141,7 +141,7 @@ const OrderProducts = db.sequelize.define("orderProducts", {
             key: "orderId",
         }
     },
-    units: DataTypes.INTEGER,
+    unit: DataTypes.INTEGER,
     productId: {
         type: DataTypes.STRING,
         allowNull: false,
