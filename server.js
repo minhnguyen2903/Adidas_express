@@ -11,6 +11,7 @@ const dbType = require("./models/dataType");
 const Filter = require("./services/filter");
 const { QueryTypes, Op } = require("sequelize");
 const address = require("address");
+const { type } = require("os");
 
 const PORT = 5000;
 
@@ -244,14 +245,24 @@ app.post("/api/delivery", async (req, res) => {
     const { orderId, firstName, lastName, phoneNumber, productId, number } = req.body;
     const location = `${req.body.province}/${req.body.district}/${req.body.ward}`;
     const orderList = [];
-    productId.forEach((element, index) => {
+    console.log(req.body);
+    if(typeof productId === "array") {
+      productId.forEach((element, index) => {
+        const product = {
+          orderId: orderId,
+          productId: element,
+          unit: number[index],
+        };
+        orderList.push(product);
+      });
+    } else {
       const product = {
         orderId: orderId,
-        productId: element,
-        units: number[index],
+        productId: productId,
+        unit: number,
       };
       orderList.push(product);
-    });
+    }
     const order = await dbType.Orders.create({
       orderId,
       firstName,
