@@ -1,7 +1,6 @@
 const express = require("express");
 require("dotenv").config({ path: __dirname + "/.env" });
 const cors = require("cors");
-const fs = require("fs");
 var bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
@@ -11,7 +10,6 @@ const dbType = require("./models/dataType");
 const Filter = require("./services/filter");
 const { QueryTypes, Op } = require("sequelize");
 const address = require("address");
-const { type } = require("os");
 
 const PORT = 5000;
 
